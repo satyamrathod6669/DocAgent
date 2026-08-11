@@ -1,0 +1,1 @@
+A project plan includes: Overview (goals and scope), Timeline (phases like Week 1-2 Requirements, Week 3-5 Design, Week 6-7 Development, Week 8 Testing), Team Roles (Project Manager, Designer, Developer, QA), and Risks/Assumptions.

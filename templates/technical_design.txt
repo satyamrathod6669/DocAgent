@@ -1,0 +1,1 @@
+A technical design document includes: Overview, System Architecture, Component Breakdown, Data Flow, and Tradeoffs Considered.
