@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Case File — Autonomous Document Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1b2430;
+    --ink-soft: #2c3646;
+    --paper: #ede9dd;
+    --paper-dim: #ddd7c4;
+    --amber: #c9932b;
+    --stamp: #9c3b3b;
+    --line: rgba(27,36,48,0.16);
+    --radius: 2px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(27,36,48,0.035) 40px);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+  }
+
+  .desk {
+    width: 100%;
+    max-width: 660px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--stamp);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 26px;
+    height: 1px;
+    background: var(--stamp);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: 34px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .subhead {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    margin: 0 0 36px;
+    max-width: 46ch;
+    line-height: 1.5;
+  }
+
+  .folder {
+    background: #fbfaf5;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 0 rgba(27,36,48,0.05), 0 18px 34px -22px rgba(27,36,48,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .folder::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--stamp) 0 30%, var(--amber) 30% 100%);
+  }
+
+  .folder-inner { padding: 30px 30px 26px; }
+
+  label.field-label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 92px;
+    resize: vertical;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    padding: 14px 16px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.5;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  textarea:focus { border-color: var(--stamp); }
+  textarea::placeholder { color: #8a8371; }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+  }
+
+  .charcount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #8a8371;
+  }
+
+  button.stamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--stamp);
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px 24px;
+    cursor: pointer;
+    transform: rotate(-1deg);
+    transition: transform .12s ease, background .12s ease;
+  }
+  button.stamp:hover { transform: rotate(-1deg) scale(1.03); background: #86322f; }
+  button.stamp:disabled { opacity: 0.5; cursor: default; transform: none; }
+  button.stamp:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .divider {
+    border-top: 1px dashed var(--line);
+    margin: 0;
+  }
+
+  .log {
+    padding: 24px 30px 30px;
+    display: none;
+  }
+  .log.visible { display: block; }
+
+  .log-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+
+  .assumption {
+    font-size: 14.5px;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-left: 2px solid var(--amber);
+    background: rgba(201,147,43,0.08);
+  }
+
+  ul.plan {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+  }
+  ul.plan li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    color: var(--ink);
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+    opacity: 0;
+    display: flex;
+    gap: 10px;
+    animation: typeIn .35s ease forwards;
+  }
+  ul.plan li::before { content: "▸"; color: var(--stamp); }
+  ul.plan li:last-child { border-bottom: none; }
+
+  @keyframes typeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .download {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 6px;
+    padding: 16px 18px;
+    background: var(--ink);
+    border-radius: var(--radius);
+  }
+  .download.visible { display: flex; }
+  .download-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--paper);
+    word-break: break-all;
+  }
+  .download a.get {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--amber);
+    text-decoration: none;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+  }
+
+  .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--stamp);
+    margin-top: 14px;
+    display: none;
+  }
+  .status.visible { display: block; }
+
+  .error {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--stamp);
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--stamp);
+    border-radius: var(--radius);
+    background: rgba(156,59,59,0.06);
+    display: none;
+  }
+  .error.visible { display: block; }
+
+  @media (prefers-reduced-motion: reduce) {
+    ul.plan li { animation: none; opacity: 1; }
+    button.stamp:hover { transform: none; }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 27px; }
+    .folder-inner, .log { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+  <main class="desk">
+    <div class="eyebrow">DocAgent</div>
+    <h1>Open a case file.</h1>
+    <p class="subhead">Describe the document in plain English. The agent plans its own steps, drafts every section, and returns a finished .docx — charts included.</p>
+
+    <div class="folder">
+      <div class="folder-inner">
+        <form id="genForm">
+          <label class="field-label" for="request">The request</label>
+          <textarea id="request" placeholder="e.g. Create a project plan for a website redesign, budget around $40,000, 8 weeks" maxlength="2000" required></textarea>
+          <div class="row">
+            <span class="charcount"><span id="charcount">0</span> / 2000</span>
+            <button type="submit" class="stamp" id="submitBtn">Generate</button>
+          </div>
+        </form>
+        <div class="status" id="status">drafting the case file…</div>
+        <div class="error" id="error"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="log" id="log">
+        <div class="log-title">Agent's plan</div>
+        <div class="assumption" id="assumption" style="display:none;"></div>
+        <ul class="plan" id="planList"></ul>
+        <div class="download" id="download">
+          <span class="download-name" id="downloadName"></span>
+          <a class="get" id="downloadLink" download>Download .docx</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+const form = document.getElementById('genForm');
+const requestField = document.getElementById('request');
+const charcount = document.getElementById('charcount');
+const submitBtn = document.getElementById('submitBtn');
+const statusEl = document.getElementById('status');
+const errorEl = document.getElementById('error');
+const logEl = document.getElementById('log');
+const assumptionEl = document.getElementById('assumption');
+const planList = document.getElementById('planList');
+const downloadEl = document.getElementById('download');
+const downloadName = document.getElementById('downloadName');
+const downloadLink = document.getElementById('downloadLink');
+
+requestField.addEventListener('input', () => {
+  charcount.textContent = requestField.value.length;
+});
+
+function resetPanels() {
+  errorEl.classList.remove('visible');
+  errorEl.textContent = '';
+  logEl.classList.remove('visible');
+  downloadEl.classList.remove('visible');
+  assumptionEl.style.display = 'none';
+  planList.innerHTML = '';
+}
+
+function renderPlan(planSteps, assumption) {
+  logEl.classList.add('visible');
+  if (assumption && assumption.trim()) {
+    assumptionEl.textContent = 'Assumption: ' + assumption;
+    assumptionEl.style.display = 'block';
+  }
+  planList.innerHTML = '';
+  planSteps.forEach((step, i) => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    li.style.animationDelay = (i * 0.12) + 's';
+    planList.appendChild(li);
+  });
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const value = requestField.value.trim();
+  if (!value) return;
+
+  resetPanels();
+  submitBtn.disabled = true;
+  statusEl.classList.add('visible');
+  statusEl.textContent = 'the agent is drafting the case file…';
+
+  try {
+    const res = await fetch('/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request: value })
+    });
+
+    if (!res.ok) {
+      let message = 'Something went wrong generating the document.';
+      try {
+        const body = await res.json();
+        message = body.detail || body.error || message;
+      } catch (_) {}
+      throw new Error(message);
+    }
+
+    const planSteps = JSON.parse(res.headers.get('X-Plan-Steps') || '[]');
+    const assumption = res.headers.get('X-Assumption') || '';
+    const docType = res.headers.get('X-Document-Type') || 'document';
+
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    const filename = match ? match[1] : `${docType}.docx`;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    statusEl.classList.remove('visible');
+    renderPlan(planSteps, assumption);
+
+    downloadName.textContent = filename;
+    downloadLink.href = url;
+    downloadLink.setAttribute('download', filename);
+    downloadEl.classList.add('visible');
+
+  } catch (err) {
+    statusEl.classList.remove('visible');
+    errorEl.textContent = err.message || 'Request failed. Please try again.';
+    errorEl.classList.add('visible');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
