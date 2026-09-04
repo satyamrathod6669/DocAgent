@@ -57,6 +57,26 @@ class PipelineError(Exception):
         super().__init__(f"{stage} failed: {original}")
 
 
+def _ascii_safe(text: str) -> str:
+    """Replace common 'smart' typography characters that break latin-1
+    HTTP headers, then strip anything else non-ASCII as a fallback.
+
+    HTTP headers are restricted to latin-1 encoding by spec. LLMs often
+    generate 'smart' typography (non-breaking hyphens, curly quotes,
+    em-dashes) that isn't valid latin-1, which crashes header encoding
+    if passed through raw.
+    """
+    replacements = {
+        "\u2011": "-", "\u2013": "-", "\u2014": "-",
+        "\u2018": "'", "\u2019": "'",
+        "\u201c": '"', "\u201d": '"',
+        "\u2026": "...",
+    }
+    for bad, good in replacements.items():
+        text = text.replace(bad, good)
+    return text.encode("ascii", "ignore").decode("ascii")
+
+
 @app.post("/generate")
 def generate_document(req: DocumentRequest):
     work_dir = tempfile.mkdtemp(prefix="docagent_")
@@ -116,7 +136,7 @@ def generate_document(req: DocumentRequest):
                 # Surface the agent's own plan/reasoning alongside the file,
                 # not just the end output.
                 "X-Document-Type": doc_type,
-                "X-Assumption": plan_data.get("assumption", ""),
+                "X-Assumption": _ascii_safe(plan_data.get("assumption", "")),
                 "X-Plan-Steps": json.dumps(plan_data["plan"]),
                 "Access-Control-Expose-Headers": "X-Document-Type, X-Assumption, X-Plan-Steps, Content-Disposition",
             },
