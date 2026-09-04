@@ -26,7 +26,7 @@ def call_groq(prompt: str, max_retries: int = 2) -> str:
     for attempt in range(max_retries + 1):
         try:
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=[
                     {"role": "user", "content": prompt}
                 ],
