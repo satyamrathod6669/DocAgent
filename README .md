@@ -77,6 +77,4 @@ Set your Groq API key as an environment variable, then run the FastAPI app:
 uvicorn main:app --reload
 ```
 
-## License
 
-MIT
