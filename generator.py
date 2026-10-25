@@ -3,6 +3,7 @@ from datetime import date
 from llm_client import call_groq
 
 
+
 def generate_shared_context(user_request: str, document_type: str, plan: list) -> dict:
     """
     Generates one consistent set of mock facts (names, dates, budget, etc.)
